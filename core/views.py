@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import render
 
 def auth(req):
-    return render(req, 'users/index.html')
+    return render(req, 'core/index.html')
 
 def home(req):
     return HttpResponse("Успешно пройдено")
