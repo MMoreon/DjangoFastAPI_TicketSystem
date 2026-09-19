@@ -7,16 +7,8 @@ services:
     volumes:
       - .:/app
       - django_media:/app/media
-    environment:
-      - SUPERUSER_USERNAME=superadmin
-      - SUPERUSER_EMAIL=admin@example.com
-      - SUPERUSER_PASSWORD=superpass
-      - DEBUG=1
-      - DB_NAME=DjangoFastAPI
-      - DB_USER=admin
-      - DB_PASSWORD=admin
-      - DB_HOST=db
-      - DB_PORT=5432
+    env_file:
+      - .env
     command: sh -c "python manage.py migrate && python manage.py createsuperuser --noinput || true && python manage.py runserver 0.0.0.0:8000"
     depends_on:
       db:
@@ -24,10 +16,10 @@ services:
   db:
     image: postgres:15
     container_name: django_postgres_db
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: DjangoFastAPI
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      - POSTGRES_PASSWORD=${DB_PASSWORD} 
     ports:
       - "5432:5432"
     volumes:
