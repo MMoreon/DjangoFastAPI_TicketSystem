@@ -1,6 +1,26 @@
-version: '3.8'
-
 services:
+  web:
+    build: .
+    container_name: TicketSystem
+    ports: 
+    - "8000:8000"
+    volumes:
+      - .:/app
+      - django_media:/app/media
+    environment:
+      - SUPERUSER_USERNAME=superadmin
+      - SUPERUSER_EMAIL=admin@example.com
+      - SUPERUSER_PASSWORD=superpass
+      - DEBUG=1
+      - DB_NAME=DjangoFastAPI
+      - DB_USER=admin
+      - DB_PASSWORD=admin
+      - DB_HOST=db
+      - DB_PORT=5432
+    command: sh -c "python manage.py migrate && python manage.py createsuperuser --noinput || true && python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      db:
+        condition: service_healthy
   db:
     image: postgres:15
     container_name: django_postgres_db
@@ -11,7 +31,13 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pg_data_secure:/var/lib/postgresql/data 
+      - pg_data_secure:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d DjangoFastAPI"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  pg_data_secure: # Docker будет вечно хранить эту папку на ПК
+  pg_data_secure:
+  django_media:
