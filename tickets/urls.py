@@ -1,5 +1,7 @@
 from django.urls import path
-from core import views
+from tickets import views
+
+app_name = 'tikets'
 
 urlpatterns = [
     path('', views.auth, name='auth'),
