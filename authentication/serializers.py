@@ -32,3 +32,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             role=validated_data.get('role', User.Role.USER)  # Если роль не прислали, будет обычный USER
         )
         return user
+
+# для администратора, чтобы не мог менять пароли 
+class ChangeUserRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('role', 'is_active', 'is_staff')

@@ -4,7 +4,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .models import User
-from .serializers import CustomTokenObtainPairSerializer, RegisterSerializer
+from .serializers import CustomTokenObtainPairSerializer, RegisterSerializer, ChangeUserRoleSerializer
+from .permissions import IsAdminUserRole
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -32,3 +34,31 @@ class DeleteUserView(generics.DestroyAPIView):
             {"detail": "Пользователь успешно удален."}, 
             status=status.HTTP_200_OK
         )
+
+
+class AdminDeleteUserView(generics.DestroyAPIView):
+    queryset = User.objects.all()
+    permission_classes = (IsAdminUserRole,)  #проверка на админа
+    lookup_field = 'id'  # Django будет искать пользователя по id из url
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        
+        # админ не должен случайно удалить себя через этот эндпоинт
+        if instance == request.user:
+            return Response(
+                {"detail": "Вы не можете удалить самого себя через этот эндпоинт."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        self.perform_destroy(instance)
+        return Response(
+            {"detail": f"Пользователь {instance.email} успешно удален администратором."}, 
+            status=status.HTTP_200_OK
+        )
+
+class AdminChangeUserRoleView(generics.UpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = ChangeUserRoleSerializer
+    permission_classes = (IsAdminUserRole,)
+    lookup_field = 'id'
