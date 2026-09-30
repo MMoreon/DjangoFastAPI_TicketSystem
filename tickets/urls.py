@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SpecialistUpdateTicketView, UserTicketListCreateView, UserTicketDetailView, UserConfirmTicketView
+from .views import SpecialistUpdateTicketView, TicketCommentListCreateView, UserTicketListCreateView, UserTicketDetailView, UserConfirmTicketView
 
 app_name = 'tickets'
 
@@ -11,5 +11,5 @@ urlpatterns = [
     
     path('<int:id>/spec/', SpecialistUpdateTicketView.as_view(), name='spec_ticket_update'),
 
-
+    path('<int:ticket_id>/comments/', TicketCommentListCreateView.as_view(), name='ticket_comments'),
 ]

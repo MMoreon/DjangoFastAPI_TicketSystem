@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Ticket
+from .models import Comment, Ticket
 
 
 # пользователь
@@ -43,3 +43,27 @@ class SpecialistUpdateTicketSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Специалист не может закрыть тикет. Это должен сделать пользователь.")
 
         return value
+
+class CommentSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    user_email = serializers.CharField(source='user.email', read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'content', 'created_at', 'user_name', 'user_email')
+        read_only_fields = ('id', 'created_at')
+
+    def validate(self, attrs):
+        # ID из параметров URL
+        ticket_id = self.context['view'].kwargs.get('ticket_id')
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            raise serializers.ValidationError("Указанный тикет не существует.")
+
+        if ticket.status == Ticket.Status.CLOSED:
+            raise serializers.ValidationError("Нельзя оставлять комментарии в закрытом тикете.")
+
+        # cохраняем объект тикета в валидированные данные чтобы использовать в perform_create
+        attrs['ticket'] = ticket
+        return attrs

@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 
-from .models import Ticket
-from .serializers import TicketCreateSerializer, UserConfirmTicketSerializer, SpecialistUpdateTicketSerializer
+from .models import Comment, Ticket
+from .serializers import CommentSerializer, TicketCreateSerializer, UserConfirmTicketSerializer, SpecialistUpdateTicketSerializer
 from .permissions import IsTicketAuthorOrStaff
 
 
@@ -63,3 +63,14 @@ class SpecialistUpdateTicketView(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
+    
+class TicketCommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = (IsAuthenticated, IsTicketAuthorOrStaff)
+
+    def get_queryset(self):
+        ticket_id = self.kwargs.get('ticket_id')
+        return Comment.objects.filter(ticket_id=ticket_id).order_by('created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
