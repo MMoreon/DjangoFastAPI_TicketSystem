@@ -19,6 +19,15 @@ class Ticket(models.Model):
         verbose_name='статус задачи'
     )
 
+    specialist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assigned_tickets",
+        verbose_name="Назначенный специалист"
+    )
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,  
         on_delete=models.CASCADE, 
