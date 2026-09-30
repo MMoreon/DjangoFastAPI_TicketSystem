@@ -71,3 +71,6 @@ redis_data/
 *.swp
 .DS_Store
 Thumbs.db
+
+/tickets/migrations
+authentication/migrations
