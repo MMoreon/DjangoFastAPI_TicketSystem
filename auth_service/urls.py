@@ -21,6 +21,6 @@ from tickets import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('tickets/', include('tickets.urls')),
+    path('tickets/', include('tickets.urls', namespace='tickets')),
     path('auth/', include('authentication.urls', namespace='authentication'))
 ]
