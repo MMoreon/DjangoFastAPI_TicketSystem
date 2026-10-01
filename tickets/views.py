@@ -13,6 +13,7 @@ from .serializers import (
     CommentSerializer,
     ScreenshotSerializer,
     TicketCreateSerializer,
+    TicketDetailSerializer,
     UserConfirmTicketSerializer,
     SpecialistUpdateTicketSerializer
     )
@@ -44,6 +45,11 @@ class UserTicketDetailView(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated, IsTicketAuthorOrStaff)
     serializer_class = TicketCreateSerializer
     lookup_field = 'id'
+    
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TicketDetailSerializer
+        return TicketCreateSerializer
 
 
 class UserConfirmTicketView(generics.UpdateAPIView):

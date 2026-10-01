@@ -86,3 +86,20 @@ class ScreenshotSerializer(serializers.ModelSerializer):
 
         attrs['ticket'] = ticket
         return attrs
+
+# подгрузка
+class TicketDetailSerializer(serializers.ModelSerializer):
+    comments = CommentSerializer(many=True, read_only=True)
+    screenshots = ScreenshotSerializer(many=True, read_only=True)
+    author_name = serializers.CharField(source='user.name', read_only=True)
+    specialist_name = serializers.CharField(source='specialist.name', read_only=True, default=None)
+
+    class Meta:
+        model = Ticket
+        fields = (
+            'id', 'title', 'description', 'status', 
+            'author_name', 'specialist_name', 
+            'created_at', 'updated_at', 
+            'comments', 'screenshots'
+        )
+        read_only_fields = ('id', 'created_at', 'updated_at')
