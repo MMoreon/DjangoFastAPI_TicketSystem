@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Comment, Ticket
+from .models import Comment, Screenshot, Ticket
 
 
 # пользователь
@@ -65,5 +65,24 @@ class CommentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Нельзя оставлять комментарии в закрытом тикете.")
 
         # cохраняем объект тикета в валидированные данные чтобы использовать в perform_create
+        attrs['ticket'] = ticket
+        return attrs
+    
+class ScreenshotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Screenshot
+        fields = ('id', 'file_path', 'uploaded_at')
+        read_only_fields = ('id', 'uploaded_at')
+
+    def validate(self, attrs):
+        ticket_id = self.context['view'].kwargs.get('ticket_id')
+        try:
+            ticket = Ticket.objects.get(id=ticket_id)
+        except Ticket.DoesNotExist:
+            raise serializers.ValidationError("Указанный тикет не существует.")
+
+        if ticket.status == Ticket.Status.CLOSED:
+            raise serializers.ValidationError("Нельзя загружать скриншоты в закрытый тикет.")
+
         attrs['ticket'] = ticket
         return attrs

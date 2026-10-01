@@ -2,9 +2,20 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+from rest_framework.parsers import MultiPartParser, FormParser
 
-from .models import Comment, Ticket
-from .serializers import CommentSerializer, TicketCreateSerializer, UserConfirmTicketSerializer, SpecialistUpdateTicketSerializer
+from .models import (
+    Comment,
+    Screenshot,
+    Ticket
+    )
+from .serializers import (
+    CommentSerializer,
+    ScreenshotSerializer,
+    TicketCreateSerializer,
+    UserConfirmTicketSerializer,
+    SpecialistUpdateTicketSerializer
+    )
 from .permissions import IsTicketAuthorOrStaff
 
 
@@ -74,3 +85,15 @@ class TicketCommentListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+        
+class TicketScreenshotListCreateView(generics.ListCreateAPIView):
+    serializer_class = ScreenshotSerializer
+    permission_classes = (IsAuthenticated, IsTicketAuthorOrStaff)
+    parser_classes = (MultiPartParser, FormParser)  # Включаем поддержку загрузки файлов
+
+    def get_queryset(self):
+        ticket_id = self.kwargs.get('ticket_id')
+        return Screenshot.objects.filter(ticket_id=ticket_id).order_by('-uploaded_at')
+
+    def perform_create(self, serializer):
+        serializer.save()
