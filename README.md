@@ -57,18 +57,18 @@
 ## Спецификация REST API (Эндпоинты)
 
 ### Аутентификация (`/api/auth/`)
-- `POST /api/auth/register/` — Регистрация нового аккаунта.
-- `POST /api/auth/token/` — Логин (Получение пары Access/Refresh токенов).
-- `POST /api/auth/token/refresh/` — Обновление Access-токена.
-- `POST /api/auth/token/blacklist/` — Логаут (Аннулирование refresh-токена).
-- `DELETE /api/auth/delete/` — Удаление собственного профиля.
-- `PATCH /api/auth/admin/users/<id>/role/` — [ADMIN] Изменение роли/активности юзера.
+- `POST /auth/register/` — Регистрация нового аккаунта.
+- `POST /auth/token/` — Логин (Получение пары Access/Refresh токенов).
+- `POST /auth/token/refresh/` — Обновление Access-токена.
+- `POST /auth/token/blacklist/` — Логаут (Аннулирование refresh-токена).
+- `DELETE /auth/delete/` — Удаление собственного профиля.
+- `PATCH /auth/admin/users/<id>/role/` — [ADMIN] Изменение роли/активности юзера.
 
 ### Управление Тикетами (`/api/tickets/`)
-- `GET /api/tickets/` — Лента тикетов (Фильтруется автоматически на основе роли токена).
-- `POST /api/tickets/` — Создание нового тикета (`multipart/form-data` или JSON).
-- `GET /api/tickets/<id>/` — Детальная информация (Включает массивы комментариев и скриншотов).
-- `PATCH /api/tickets/<id>/confirm/` — [USER] Закрытие решенного тикета (`status: CLS`).
-- `PATCH /api/tickets/<id>/spec/` — [SPEC] Принятие в работу (`PRG`) или перевод в статус решено (`RSL`).
-- `POST /api/tickets/<id>/comments/` — Добавление текстового комментария в чат тикета.
-- `POST /api/tickets/<id>/screenshots/` — Загрузка медиафайла к тикету (`multipart/form-data`).
+- `GET /tickets/` — Лента тикетов (Фильтруется автоматически на основе роли токена).
+- `POST /tickets/` — Создание нового тикета (`multipart/form-data` или JSON).
+- `GET /tickets/<id>/` — Детальная информация (Включает массивы комментариев и скриншотов).
+- `PATCH /tickets/<id>/confirm/` — [USER] Закрытие решенного тикета (`status: CLS`).
+- `PATCH /tickets/<id>/spec/` — [SPEC] Принятие в работу (`PRG`) или перевод в статус решено (`RSL`).
+- `POST /tickets/<id>/comments/` — Добавление текстового комментария в чат тикета.
+- `POST /tickets/<id>/screenshots/` — Загрузка медиафайла к тикету (`multipart/form-data`).
