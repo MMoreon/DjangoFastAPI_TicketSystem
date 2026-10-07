@@ -29,7 +29,20 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    hostname: rabbitmq
+    restart: always
+    ports:
+      - 15672:15672
+      - 5672:5672
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+
 
 volumes:
   pg_data_secure:
   django_media:
+  rabbitmq_data:
+  rabbitmq_logs:
