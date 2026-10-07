@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
+from .services import send_ticket_update_to_queue
 
 from .models import (
     Comment,
@@ -73,9 +74,20 @@ class SpecialistUpdateTicketView(generics.UpdateAPIView):
     def perform_update(self, serializer):
         # записывает спеца в тикет
         if self.get_object().status == Ticket.Status.OPEN:
-            serializer.save(specialist=self.request.user, status=Ticket.Status.IN_PROGRESS)
+            ticket = serializer.save(specialist=self.request.user, status=Ticket.Status.IN_PROGRESS)
+            
+            send_ticket_update_to_queue(
+            ticket_id=ticket.id,
+            title=ticket.title,
+            status=ticket.status,
+            client_email=ticket.user.email,
+
+            specialist_name=ticket.specialist.name, 
+            specialist_email=ticket.specialist.email
+        )
+        
         else:
-            serializer.save()
+            ticket = serializer.save()
 
     def update(self, request, *args, **kwargs):
         kwargs['partial'] = True

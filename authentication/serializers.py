@@ -11,6 +11,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         # в тело токена кастомные claims
         token['name'] = user.name
         token['role'] = user.role  #ADM USR SPC
+        token['email'] = user.email
 
         return token
 
