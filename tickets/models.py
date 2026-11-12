@@ -36,6 +36,12 @@ class Ticket(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата последнего обновления")
+    
+    ai_suggestion = models.TextField(
+        blank=True, 
+        null=True, 
+        verbose_name="Подсказка ИИ"
+    )
 
 class Comment(models.Model):
     content = models.TextField(verbose_name='текст сообщения')

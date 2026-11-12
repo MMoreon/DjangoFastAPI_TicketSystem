@@ -57,9 +57,37 @@ services:
       - db
       - rabbitmq
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: helpdesk_ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+  celery_worker:
+    build: . 
+    container_name: helpdesk_celery
+    # --concurrency=1 гарантирует что задачи идут в нейросеть строго по очереди, не перегружая RAM
+    command: celery -A auth_service worker -l info --concurrency=1
+    volumes:
+      - .:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+      ollama:
+        condition: service_started
+    restart: unless-stopped
+
 
 volumes:
   pg_data_secure:
   django_media:
   rabbitmq_data:
+  ollama_data:
 

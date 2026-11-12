@@ -98,8 +98,8 @@ class TicketDetailSerializer(serializers.ModelSerializer):
         model = Ticket
         fields = (
             'id', 'title', 'description', 'status', 
+            'created_at', 'updated_at', "ai_suggestion",
             'author_name', 'specialist_name', 
-            'created_at', 'updated_at', 
             'comments', 'screenshots'
         )
         read_only_fields = ('id', 'created_at', 'updated_at')

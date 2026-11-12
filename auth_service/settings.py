@@ -171,3 +171,8 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
+
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//") 
+CELERY_IGNORE_RESULT = True # Не тратим ресурсы на хранение результатов
+CELERY_TASK_DEFAULT_QUEUE = "celery" # Отдельная очередь, чтобы не мешать FastAPI

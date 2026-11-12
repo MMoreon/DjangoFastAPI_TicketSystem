@@ -27,7 +27,7 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket, email: str):
         await websocket.accept()
         self.active_connections[email] = websocket
-        logger.info(f"🔌 Пользователь {email} подключился к WebSockets")
+        logger.info(f"Пользователь {email} подключился к WebSockets")
 
     def disconnect(self, email: str):
         if email in self.active_connections:
@@ -80,6 +80,7 @@ async def consume_rabbitmq_messages():
             async for message in queue_iter:
                 async with message.process():
                     data = json.loads(message.body.decode())
+                    logger.info(f"1. ИЗ ОЧЕРЕДИ ПРИШЛО: {data}")
                     
                     status = data.get("status")
                     if status == "PRG":
@@ -95,7 +96,24 @@ async def consume_rabbitmq_messages():
                         }
                         
                         await manager.send_personal_message(payload_to_frontend, client_email)
-                        
+# мы не меняем ЖЦ, чтобы заявка ждала живого специалиста
+                    elif data.get("event") == "ai_suggestion":
+                        ticket_id = data.get("ticket_id")
+                        client_email = str(data.get("client_email"))
+                        ai_text = data.get("ai_suggestion")
+
+                        logger.info(f"2. ПОДКЛЮЧЕННЫЕ EMAIL: {list(manager.active_connections.keys())} | ИЩЕМ: {client_email}")
+
+                        payload_to_frontend = {
+                            "type": "ai_suggestion",
+                            "ticket_id": ticket_id,
+                            "ai_suggestion": ai_text,
+                            "message": "ИИ-помощник подготовил рекомендации по заявке"
+                        }
+
+                        await manager.send_personal_message(payload_to_frontend, client_email)                  
+
+
 @app.on_event("startup")
 async def startup_event():
     asyncio.create_task(consume_rabbitmq_messages())

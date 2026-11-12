@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from rest_framework.parsers import MultiPartParser, FormParser
+
+from tickets.tasks import generate_ai_suggestion
 from .services import send_ticket_update_to_queue
 
 from .models import (
@@ -38,7 +40,8 @@ class UserTicketListCreateView(generics.ListCreateAPIView):
         return Ticket.objects.filter(user=user).order_by('-created_at')
         
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        ticket = serializer.save(user=self.request.user)
+        generate_ai_suggestion.delay(ticket.id)
 
 
 class UserTicketDetailView(generics.RetrieveAPIView):
@@ -103,6 +106,7 @@ class TicketCommentListCreateView(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
         
 class TicketScreenshotListCreateView(generics.ListCreateAPIView):
     serializer_class = ScreenshotSerializer
