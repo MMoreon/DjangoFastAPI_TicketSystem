@@ -17,6 +17,14 @@ class UserAdmin(BaseUserAdmin):
         ('Права доступа и роли', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Важные даты', {'fields': ('last_login', 'created_at')}),
     )
+
+    # Настройки полей нового пользователя
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'name', 'role', 'password1', 'password2', 'is_staff', 'is_active'),
+        }),
+    )
     
     # Поля, которые нельзя редактировать вручную
     readonly_fields = ('created_at', 'last_login')

@@ -21,7 +21,7 @@ ALGORITHM = "HS256"
 
 class ConnectionManager:
     def __init__(self):
-        # Храним активные вебсокеты в формате: { "user_email": websocket_object }
+        # активные вебсокеты в формате: { "user_email": websocket_object }
         self.active_connections: Dict[str, WebSocket] = {}
 
     async def connect(self, websocket: WebSocket, email: str):
@@ -67,52 +67,55 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
         manager.disconnect(user_email)
 
 async def consume_rabbitmq_messages():
-    await asyncio.sleep(5)
-    connection = await aio_pika.connect_robust(RABBITMQ_URL)
-    
-    async with connection:
-        channel = await connection.channel()
-        queue = await channel.declare_queue(QUEUE_NAME, durable=True)
-        
-        logger.info("FastAPI connected to RabbitMQ")
-        
-        async with queue.iterator() as queue_iter:
-            async for message in queue_iter:
-                async with message.process():
-                    data = json.loads(message.body.decode())
-                    logger.info(f"1. ИЗ ОЧЕРЕДИ ПРИШЛО: {data}")
-                    
-                    status = data.get("status")
-                    if status == "PRG":
-                        ticket_title = data.get("title")
-                        spec_name = data.get("specialist_name", "Специалист")
-                        ticket_id = data.get("ticket_id")
-                        client_email = str(data.get("client_email"))
-                        
-                        payload_to_frontend = {
-                            "type": "ticket_assigned",
-                            "ticket_id": ticket_id,
-                            "message": f"Специалист {spec_name} взял в работу ваш тикет '{ticket_title}'"
-                        }
-                        
-                        await manager.send_personal_message(payload_to_frontend, client_email)
-# мы не меняем ЖЦ, чтобы заявка ждала живого специалиста
-                    elif data.get("event") == "ai_suggestion":
-                        ticket_id = data.get("ticket_id")
-                        client_email = str(data.get("client_email"))
-                        ai_text = data.get("ai_suggestion")
+    while True:
+        try:
+            connection = await aio_pika.connect_robust(RABBITMQ_URL)
+            
+            async with connection:
+                channel = await connection.channel()
+                queue = await channel.declare_queue(QUEUE_NAME, durable=True)
+                
+                logger.info("FastAPI connected to RabbitMQ")
+                
+                async with queue.iterator() as queue_iter:
+                    async for message in queue_iter:
+                        async with message.process():
+                            data = json.loads(message.body.decode())
+                            logger.info(f"1. ИЗ ОЧЕРЕДИ ПРИШЛО: {data}")
+                            
+                            status = data.get("status")
+                            if status == "PRG":
+                                ticket_title = data.get("title")
+                                spec_name = data.get("specialist_name", "Специалист")
+                                ticket_id = data.get("ticket_id")
+                                client_email = str(data.get("client_email"))
+                                
+                                payload_to_frontend = {
+                                    "type": "ticket_assigned",
+                                    "ticket_id": ticket_id,
+                                    "message": f"Специалист {spec_name} взял в работу ваш тикет '{ticket_title}'"
+                                }
+                                
+                                await manager.send_personal_message(payload_to_frontend, client_email)
+        # мы не меняем ЖЦ, чтобы заявка ждала живого специалиста
+                            elif data.get("event") == "ai_suggestion":
+                                ticket_id = data.get("ticket_id")
+                                client_email = str(data.get("client_email"))
+                                ai_text = data.get("ai_suggestion")
 
-                        logger.info(f"2. ПОДКЛЮЧЕННЫЕ EMAIL: {list(manager.active_connections.keys())} | ИЩЕМ: {client_email}")
+                                logger.info(f"2. ПОДКЛЮЧЕННЫЕ EMAIL: {list(manager.active_connections.keys())} | ИЩЕМ: {client_email}")
 
-                        payload_to_frontend = {
-                            "type": "ai_suggestion",
-                            "ticket_id": ticket_id,
-                            "ai_suggestion": ai_text,
-                            "message": "ИИ-помощник подготовил рекомендации по заявке"
-                        }
+                                payload_to_frontend = {
+                                    "type": "ai_suggestion",
+                                    "ticket_id": ticket_id,
+                                    "ai_suggestion": ai_text,
+                                    "message": "ИИ-помощник подготовил рекомендации по заявке"
+                                }
 
-                        await manager.send_personal_message(payload_to_frontend, client_email)                  
-
+                                await manager.send_personal_message(payload_to_frontend, client_email)                  
+        except Exception as e:
+            logger.warning(f"RabbitMQ недоступен ({e}),попытка через 5 сек.")
+            await asyncio.sleep(5)
 
 @app.on_event("startup")
 async def startup_event():

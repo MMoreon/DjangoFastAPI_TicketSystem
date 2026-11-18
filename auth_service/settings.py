@@ -176,3 +176,9 @@ SIMPLE_JWT = {
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//") 
 CELERY_IGNORE_RESULT = True # Не тратим ресурсы на хранение результатов
 CELERY_TASK_DEFAULT_QUEUE = "celery" # Отдельная очередь, чтобы не мешать FastAPI
+
+# без Nginx
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]

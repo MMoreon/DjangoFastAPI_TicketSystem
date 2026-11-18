@@ -32,7 +32,6 @@ secrets.json
 *.db
 
 # Медиа-файлы пользователей (загружаемые аватарки, файлы тикетов и т.д.)
-/media/
 /staticfiles/
 static_collected/
 

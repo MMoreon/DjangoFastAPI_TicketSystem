@@ -2,11 +2,13 @@ services:
   web:
     build: .
     container_name: TicketSystem
-    ports: 
-    - "8000:8000"
+    expose:
+      - "8000"
+    # без nginx
+    # ports:  
+    # - "8000:8000"
     volumes:
       - .:/app
-      - django_media:/app/media
     env_file:
       - .env
     command: sh -c "python manage.py makemigrations authentication tickets; python manage.py migrate; python manage.py createsuperuser --noinput || true; python manage.py runserver 0.0.0.0:8000"
@@ -46,8 +48,11 @@ services:
     build: .
     container_name: AlertFastAPI
     restart: always
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
+    # без nginx
+    # ports:
+    #   - "8080:8080"
     volumes:
       - .:/app
     env_file:
@@ -84,10 +89,21 @@ services:
         condition: service_started
     restart: unless-stopped
 
-
+  nginx:
+    image: nginx:alpine
+    container_name: helpdesk_gateway
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./media:/app/media:ro
+    depends_on:
+      - web
+      - fastapi_service
 volumes:
   pg_data_secure:
-  django_media:
+  # django_media:
   rabbitmq_data:
   ollama_data:
 
