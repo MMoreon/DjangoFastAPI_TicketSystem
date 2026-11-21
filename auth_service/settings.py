@@ -31,7 +31,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# для метрик
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "ticketsystem", "TicketSystem"]
+
 
 
 # Application definition
