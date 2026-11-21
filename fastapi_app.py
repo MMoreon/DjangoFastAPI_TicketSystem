@@ -4,6 +4,8 @@ import logging
 import os
 from typing import Dict
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Query
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Gauge, Counter
 import aio_pika
 import jwt
 
@@ -12,6 +14,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("FastAPI-NotificationService")
 
 app = FastAPI(title="Notification Service")
+
+# прометей авто сборщик
+Instrumentator().instrument(app).expose(app)
+
+# счетчик сокета
+ACTIVE_WS = Gauge("helpdesk_ws_active_connections", "Активные WebSocket соединения")
+WS_SENT = Counter("helpdesk_ws_messages_sent_total", "Отправленные пуши в сокет")
 
 RABBITMQ_URL = os.getenv("RABBITMQ_URL", "amqp://guest:guest@rabbitmq:5672/")
 QUEUE_NAME = "ticket_updates"
@@ -60,11 +69,15 @@ async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
     user_email = str(user_email)
     await manager.connect(websocket, user_email)
     
+    ACTIVE_WS.inc() 
     try:
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
         manager.disconnect(user_email)
+    
+    finally:
+        ACTIVE_WS.dec()
 
 async def consume_rabbitmq_messages():
     while True:
