@@ -1,7 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import Ticket, Comment, Screenshot
 
+from .models import Comment, Screenshot, Ticket
 
 admin.site.register(Ticket)
 admin.site.register(Comment)

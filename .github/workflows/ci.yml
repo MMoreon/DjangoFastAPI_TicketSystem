@@ -1,0 +1,68 @@
+name: Helpdesk CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      rabbitmq:
+        image: rabbitmq:3.13-alpine
+        ports:
+          - 5672:5672
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Ruff linter
+        run: ruff check .
+
+      - name: Run Django tests
+        env:
+          DJANGO_SECRET_KEY: ci-secret-key-for-tests-minimum-50-chars-long-123456
+          DB_NAME: test_db
+          DB_USER: admin
+          DB_PASSWORD: test_password
+          DB_HOST: localhost
+          DB_PORT: "5432"
+          CELERY_BROKER_URL: amqp://guest:guest@localhost:5672//
+        run: python manage.py test
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check Docker Compose build
+        run: docker compose build
