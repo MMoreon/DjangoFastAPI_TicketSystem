@@ -23,8 +23,24 @@ SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / "media"
+STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3.S3Storage",
+        "OPTIONS": {
+            "access_key": os.environ.get("MINIO_ROOT_USER"),
+            "secret_key": os.environ.get("MINIO_ROOT_PASSWORD"),
+            "bucket_name": os.environ.get("AWS_STORAGE_BUCKET_NAME", "helpdesk-media"),
+            "endpoint_url": "http://minio:9000",  # внутри сети
+            "custom_domain": "127.0.0.1:9000/helpdesk-media",  # для браузера
+            "url_protocol": "http:",
+            "querystring_auth": False,
+        },
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
@@ -51,6 +67,7 @@ INSTALLED_APPS = [
     "django_prometheus",
     "authentication.apps.AuthenticationConfig",
     "rest_framework_simplejwt.token_blacklist",
+    "storages",
 ]
 
 MIDDLEWARE = [
