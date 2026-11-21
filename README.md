@@ -1,4 +1,5 @@
 # Django Helpdesk Ticket System (Backend Service)
+[![Helpdesk CI](https://github.com/MMoreon/DjangoFastAPI_TicketSystem/actions/workflows/ci.yml/badge.svg)](https://github.com/MMoreon/DjangoFastAPI_TicketSystem/actions/workflows/ci.yml)
 
 Гибридная отказоустойчивая система управления заявками (Helpdesk) техподдержки. 
 ## Содержание
