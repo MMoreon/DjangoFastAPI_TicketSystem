@@ -19,7 +19,7 @@
 
 - **Backend:** Python 3.13, Django 5.2+ (DRF), FastAPI (Uvicorn), Celery
 - **Авторизация:** Simple JWT, PyJWT
-- **БД и брокер и S3:** PostgreSQL 15, RabbitMQ, 
+- **БД и брокер и S3:** PostgreSQL 15, RabbitMQ, RustFS (S3-compatible Storage)
 - **Локальный ИИ:** Ollama (`qwen2.5:3b`)
 - **Инфраструктура:** Nginx, Docker, Docker Compose
 - **Мониторинг и тесты:** Prometheus, Grafana, cAdvisor, Locust
